@@ -308,14 +308,14 @@ color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="Project">
+    <widget class="QWidget" name="page_2_Project">
      <widget class="QLabel" name="projectName">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>0</y>
         <width>111</width>
-        <height>21</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -390,8 +390,44 @@ color: rgb(255, 255, 255);</string>
        <string>Bugs</string>
       </property>
      </widget>
+     <widget class="QLabel" name="label_21">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>0</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Status:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="projectStatusBox">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>0</y>
+        <width>121</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(234, 250, 255);</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>In Progress</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Completed</string>
+       </property>
+      </item>
+     </widget>
     </widget>
-    <widget class="QWidget" name="page_3">
+    <widget class="QWidget" name="page_3_newProject">
      <widget class="QLabel" name="label_13">
       <property name="geometry">
        <rect>
@@ -575,7 +611,7 @@ color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="page_4">
+    <widget class="QWidget" name="page_4_participants">
      <widget class="QLabel" name="label_17">
       <property name="geometry">
        <rect>
@@ -618,7 +654,7 @@ color: rgb(255, 255, 255);</string>
        <string notr="true">background-color: rgb(255, 255, 255);</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_4">
+     <widget class="QPushButton" name="removeParticipants">
       <property name="geometry">
        <rect>
         <x>280</x>
@@ -634,7 +670,7 @@ color: rgb(255, 255, 255);</string>
        <string>Remove</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_5">
+     <widget class="QPushButton" name="addParticipantsButton">
       <property name="geometry">
        <rect>
         <x>680</x>
@@ -664,13 +700,26 @@ color: rgb(255, 255, 255);</string>
       <property name="geometry">
        <rect>
         <x>410</x>
-        <y>30</y>
+        <y>40</y>
         <width>151</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text">
        <string>Add New Participants</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_20">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>40</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Participants</string>
       </property>
      </widget>
     </widget>

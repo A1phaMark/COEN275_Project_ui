@@ -38,9 +38,14 @@ private slots:
 
     void on_viewParticipants_clicked();
 
+    void on_addParticipantsButton_clicked();
+
+    void on_removeParticipants_clicked();
+
 private:
     Ui::management_tool *ui;
     std::string userid;
+    std::string projectName;
     std::vector<std::string> projects;
     std::vector<std::string> tasks;
     std::vector<std::string> bugs;

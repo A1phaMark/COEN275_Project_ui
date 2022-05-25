@@ -5,6 +5,7 @@
 #include <QList>
 #include <unistd.h>
 #include <QListWidget>
+#include <QIcon>
 using namespace std;
 
 management_tool::management_tool(QWidget *parent)
@@ -25,13 +26,19 @@ void management_tool::setMainPage(){
     //set welcome label text
     ui->welcomeLabel->setText("Welcome, " + QString::fromStdString(userid));
 
+    //fetch project list from MySQL db
+
+
     //set up project list
     this->projects.clear();
     for(int i = 0; i<100; i++){
         this->projects.push_back("project"+std::to_string(i));
     }
     for(string p: this->projects){
-        ui->projectList->addItem(QString::fromStdString(p));
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setText(QString::fromStdString(p));
+        item->setIcon(QIcon(":/icon/in_progress.png"));
+        ui->projectList->addItem(item);
     }
     //chech user role and decide whether to show participants button
 }
@@ -71,11 +78,30 @@ void management_tool::setNewProjectPage(){
 
 //set up change participants page
 void management_tool::setParticipantPage(std::string p){
-    //get current participants list
+    this->projectName = p;
+    std::vector<std::string> participants;
+    std::vector<std::string> newParticipants;
+    //retrieve participant lists and new participants list from MySQL db
 
 
-    //get new participants list
+    //set up current participants list
+    for (string par: participants){
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setText(QString::fromStdString(par));
+        item->setCheckState(Qt::Unchecked);
+        ui->currentParticipants->addItem(item);
+    }
+
+    //set up new participants list
+    for (string par: newParticipants){
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setText(QString::fromStdString(par));
+        item->setCheckState(Qt::Unchecked);
+        ui->addParticipants->addItem(item);
+    }
 }
+
+
 
 void management_tool::on_login_2_clicked()
 {
@@ -136,16 +162,22 @@ void management_tool::on_confirmNewProject_clicked()
     //if title available
     ui->successMessage->setVisible(true);
 
-    //update project info
+    //get participants list
     std::string title = ui->projectTitle->text().toStdString();
     std::string description = ui->projectDescription->toPlainText().toStdString();
     std::string date = ui->projectDate->text().toStdString();
+    std::vector<std::string> part;
     cout<<description<<endl;
     for (int i=0; i < ui->employeeList->count(); i++){
         if (ui->employeeList->item(i)->checkState() == Qt::Checked){
+            part.push_back(ui->employeeList->item(i)->text().toStdString());
             cout << ui->employeeList->item(i)->text().toStdString()<<endl;
         }
     }
+
+    //update MySQL db
+
+
     //go back to main page
     sleep(2);
     setMainPage();
@@ -172,5 +204,46 @@ void management_tool::on_viewParticipants_clicked()
     string pname = ui->projectList->currentItem()->text().toStdString();
     setParticipantPage(pname);
     ui->stackedWidget->setCurrentIndex(4);
+}
+
+
+void management_tool::on_addParticipantsButton_clicked()
+{
+    //get added employees list
+    std::vector<std::string> addP;
+    for (int i=0; i<ui->addParticipants->count(); i++){
+        if (ui->addParticipants->item(i)->checkState() == Qt::Checked){
+            std::string temp = ui->addParticipants->item(i)->text().toStdString();
+            addP.push_back(temp);
+        }
+    }
+    //update MySQL db
+
+
+    //update current page
+
+
+    this->repaint();
+
+}
+
+
+void management_tool::on_removeParticipants_clicked()
+{
+    //get selected employees list
+    std::vector<std::string> currentP;
+    for (int i=0; i<ui->currentParticipants->count(); i++){
+        if (ui->currentParticipants->item(i)->checkState() == Qt::Checked){
+            std::string temp = ui->currentParticipants->item(i)->text().toStdString();
+            currentP.push_back(temp);
+        }
+    }
+    //update MySQL db
+
+
+    //update current page
+
+
+    this->repaint();
 }
 
