@@ -163,8 +163,11 @@ void management_tool::setProjectPage(std::string p){
 
 //set up create new project page
 void management_tool::setNewProjectPage(){
-    //clear widgets
+    //clear all widgets
     ui->employeeList->clear();
+    ui->projectTitle->clear();
+    ui->projectDescription->clear();
+    ui->projectDate->clear();
     //hide all warning message
     ui->projectTitleWarning->setVisible(false);
     ui->dateFormatWarning->setVisible(false);
@@ -256,6 +259,9 @@ void management_tool::setTaskPage(std::string tn){
 void management_tool::setNewTaskPage(){
     //clear widget
     ui->employeeList_2->clear();
+    ui->newTaskTitle->clear();
+    ui->newTaskDescription->clear();
+    ui->newTaskDate->clear();
     //hide all warning messages
     ui->taskDateWarning->setVisible(false);
     ui->taskDescriptionWarning->setVisible(false);
@@ -429,8 +435,7 @@ void management_tool::on_addParticipantsButton_clicked()
 
 
     //update current page
-
-
+    setParticipantPage(this->projectName);
     this->repaint();
 
 }
@@ -450,8 +455,7 @@ void management_tool::on_removeParticipants_clicked()
 
 
     //update current page
-
-
+    setParticipantPage(this->projectName);
     this->repaint();
 }
 
