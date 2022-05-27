@@ -786,7 +786,8 @@ color: rgb(255, 255, 255);</string>
          </rect>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 255);</string>
+         <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(44, 44, 44);</string>
         </property>
        </widget>
        <widget class="QListWidget" name="addParticipants">

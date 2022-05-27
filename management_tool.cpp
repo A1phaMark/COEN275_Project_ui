@@ -87,11 +87,16 @@ void management_tool::setMainPage(){
     for (auto item = projects.begin(); item != projects.end(); item++)
     {
         projectObject project = *item;
-        ui->projectList->addItem(project.name);
-
+        QListWidgetItem *newItem = new QListWidgetItem();
+        newItem->setText(project.name);
+        if(project.status == "In Progress"){
+            newItem->setIcon(QIcon(":/icon/in_progress.png"));
+        }
+        else{
+            newItem->setIcon(QIcon(":/icon/completed.png"));
+        }
+         ui->projectList->addItem(newItem);
     }
-
-//    item->setIcon(QIcon(":/icon/in_progress.png"));
     //chech user role and decide whether to show participants button
 }
 
@@ -490,9 +495,7 @@ void management_tool::on_removeParticipants_clicked()
 {
     //get selected employees list
     int i = 0;
-    qDebug()<<this->curParticipants.size();
     for(participantObject participant: this->curParticipants){
-        qDebug()<<i;
         if (ui->currentParticipants->item(i)->checkState() == Qt::Checked){
              participantModel().removeParticipant(participant);
         }
