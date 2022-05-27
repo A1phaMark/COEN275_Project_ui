@@ -2,6 +2,14 @@
 #define MANAGEMENT_TOOL_H
 #include <QMainWindow>
 #include <QListWidget>
+#include "user.h"
+#include "projectmodel.h"
+#include "taskmodel.h"
+#include "bugmodel.h"
+#include "usermodel.h"
+#include "commentmodel.h"
+#include "participantmodel.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class management_tool; }
 QT_END_NAMESPACE
@@ -15,12 +23,14 @@ public:
     ~management_tool();
     void setLoginPage();
     void setMainPage();
-    void setProjectPage(std::string p);
+    void setProjectPage();
     void setNewProjectPage();
-    void setParticipantPage(std::string p);
-    void setTaskPage(std::string tn);
+    void setParticipantPage();
+    void setTaskPage();
     void setNewTaskPage();
     bool checkDateFormat(std::string date);
+    taskObject getTask();
+    void refreshTasks();
 private slots:
 
     void on_login_2_clicked();
@@ -78,10 +88,17 @@ private:
     Ui::management_tool *ui;
     std::string userid;
     std::string projectName;
-    std::vector<std::string> projects;
     std::vector<std::string> tasks;
-    std::vector<std::string> bugs;
     std::vector<std::string> task_comment;
     std::vector<std::string> bug_comment;
+
+    user* usr;
+    vector<projectObject> projects;
+    vector<bugObject> bugs;
+    vector<taskObject> progressTasks;
+    vector<taskObject> completedTasks;
+    vector<user> users;
+    vector<user> newParticipants;
+    vector<user> curParticipants;
 };
 #endif // MANAGEMENT_TOOL_H

@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,11 +9,41 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    auth.cpp \
+    bugmodel.cpp \
+    bugobject.cpp \
+    commentmodel.cpp \
+    commentobject.cpp \
+    db.cpp \
     main.cpp \
-    management_tool.cpp
+    management_tool.cpp \
+    participantmodel.cpp \
+    projectmodel.cpp \
+    projectobject.cpp \
+    taskmodel.cpp \
+    taskobject.cpp \
+    timelinemodel.cpp \
+    timelineobject.cpp \
+    user.cpp \
+    usermodel.cpp
 
 HEADERS += \
-    management_tool.h
+    auth.h \
+    bugmodel.h \
+    bugobject.h \
+    commentmodel.h \
+    commentobject.h \
+    db.h \
+    management_tool.h \
+    participantmodel.h \
+    projectmodel.h \
+    projectobject.h \
+    taskmodel.h \
+    taskobject.h \
+    timelinemodel.h \
+    timelineobject.h \
+    user.h \
+    usermodel.h
 
 FORMS += \
     management_tool.ui
