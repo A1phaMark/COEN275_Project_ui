@@ -10,7 +10,7 @@
 #include <QMessageBox>
 using namespace std;
 
-int cur_project = 0, cur_progress_task = 0, cur_completed_task = 0, cur_task_status = 0;
+int cur_project = 0, cur_new_task = 0, cur_progress_task = 0, cur_completed_task = 0, cur_task_status = 0;
 
 management_tool::management_tool(QWidget *parent)
     : QMainWindow(parent)
@@ -57,6 +57,7 @@ bool management_tool::checkDateFormat(std::string date){
 }
 
 void management_tool::refreshTasks(){
+    this->newTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "New");
     this->progressTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "In Progress");
     this->completedTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "Completed");
 }
@@ -68,6 +69,7 @@ void management_tool::setLoginPage(){
     ui->stackedWidget->setCurrentIndex(0);
     ui->user_4->clear();
     ui->password_4->clear();
+    ui->password_4->setEchoMode(QLineEdit::Password);
 }
 
 
@@ -95,8 +97,14 @@ void management_tool::setMainPage(){
         projectObject project = *item;
         QTreeWidgetItem *child = new QTreeWidgetItem();
         child->setText(0, project.name);
-        if(project.status == "In Progress"){
+        if(project.status == "New"){
             child->setIcon(0, QIcon(":/icon/in_progress.png"));
+        }
+        else if(project.status == "In Progress"){
+            child->setIcon(0, QIcon(":/icon/in_progress.png"));
+        }
+        else if(project.status == "Completed"){
+            child->setIcon(0, QIcon(":/icon/completed.png"));
         }
         else{
             child->setIcon(0, QIcon(":/icon/completed.png"));
@@ -126,11 +134,17 @@ void management_tool::setProjectPage(){
 
 
     //get and set up project status. Index 0 = in progress, index 1 = completed
-    if(project.status == "In Progress"){
+    if(project.status == "New"){
         ui->projectStatusBox->setCurrentIndex(0);
     }
-    else{
+    else if(project.status == "In Progress"){
         ui->projectStatusBox->setCurrentIndex(1);
+    }
+    else if(project.status == "Completed"){
+        ui->projectStatusBox->setCurrentIndex(2);
+    }
+    else{
+        ui->projectStatusBox->setCurrentIndex(3);
     }
 
     //get task list
@@ -140,12 +154,12 @@ void management_tool::setProjectPage(){
     ui->taskList->setHeaderLabels(label);
     refreshTasks();
 
-    //get in progress task
+    //get new task
     QTreeWidgetItem *root1 = new QTreeWidgetItem(ui->taskList);
-    root1->setText(0, "In Progress");
+    root1->setText(0, "New");
     ui->taskList->addTopLevelItem(root1);
     //retrieve data from sql db
-    for (auto item = this->progressTasks.begin(); item != this->progressTasks.end(); item++)
+    for (auto item = this->newTasks.begin(); item != this->newTasks.end(); item++)
     {
         taskObject task = *item;
         QTreeWidgetItem *child = new QTreeWidgetItem();
@@ -157,11 +171,12 @@ void management_tool::setProjectPage(){
         root1->addChild(child);
     }
 
-    //get completed tasks
+    //get in progress task
     QTreeWidgetItem *root2 = new QTreeWidgetItem(ui->taskList);
-    root2->setText(0, "Completed");
+    root2->setText(0, "In Progress");
     ui->taskList->addTopLevelItem(root2);
-    for (auto item = this->completedTasks.begin(); item != this->completedTasks .end(); item++)
+    //retrieve data from sql db
+    for (auto item = this->progressTasks.begin(); item != this->progressTasks.end(); item++)
     {
         taskObject task = *item;
         QTreeWidgetItem *child = new QTreeWidgetItem();
@@ -171,6 +186,22 @@ void management_tool::setProjectPage(){
         child->setText(3, task.updateDate.toString("yyyy-MM-dd"));
         child->setText(4, task.owner);
         root2->addChild(child);
+    }
+
+    //get completed tasks
+    QTreeWidgetItem *root3= new QTreeWidgetItem(ui->taskList);
+    root3->setText(0, "Completed");
+    ui->taskList->addTopLevelItem(root3);
+    for (auto item = this->completedTasks.begin(); item != this->completedTasks .end(); item++)
+    {
+        taskObject task = *item;
+        QTreeWidgetItem *child = new QTreeWidgetItem();
+        child->setText(0, task.name);
+        child->setText(1, task.status);
+        child->setText(2, task.createDate.toString("yyyy-MM-dd"));
+        child->setText(3, task.updateDate.toString("yyyy-MM-dd"));
+        child->setText(4, task.owner);
+        root3->addChild(child);
     }
 
     //get bug list
@@ -255,6 +286,9 @@ void management_tool::setParticipantPage(){
 taskObject management_tool::getTask(){
     taskObject task;
     if(cur_task_status == 0){
+        task = this->newTasks[cur_new_task];
+    }
+    else if (cur_task_status == 1){
         task = this->progressTasks[cur_progress_task];
     }
     else{
@@ -299,11 +333,14 @@ void management_tool::setTaskPage(){
         ui->taskStatusBox->setVisible(false);
     }
 
-    if(task.status == "In Progress"){
+    if(task.status == "New"){
         ui->taskStatusBox->setCurrentIndex(0);
     }
-    else{
+    else if(task.status == "In Progress"){
         ui->taskStatusBox->setCurrentIndex(1);
+    }
+    else{
+        ui->taskStatusBox->setCurrentIndex(2);
     }
 
     //set comment section
@@ -602,10 +639,16 @@ void management_tool::on_projectStatusBox_currentIndexChanged(int index)
 {
     projectObject project = this->projects[cur_project];
     if (index == 0){
+        project.status = "New";
+    }
+    else if (index == 1){
         project.status = "In Progress";
     }
-    else{
+    else if (index == 2){
         project.status = "Completed";
+    }
+    else{
+        project.status = "Closed";
     }
 
     //upate db
@@ -762,9 +805,12 @@ void management_tool::on_taskStatusBox_currentIndexChanged(int index)
     string status;
     taskObject task = getTask();
     if (index == 0){
+        task.status = "New";
+    }
+    else if (index == 1){
         task.status = "In Progress";
     }
-    else{
+    else if (index == 2){
         task.status = "Completed";
     }
 

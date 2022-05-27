@@ -95,6 +95,7 @@ private:
     user* usr;
     vector<projectObject> projects;
     vector<bugObject> bugs;
+    vector<taskObject> newTasks;
     vector<taskObject> progressTasks;
     vector<taskObject> completedTasks;
     vector<user> users;
