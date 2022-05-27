@@ -14,7 +14,7 @@ class projectObject
         QString description;
         QDateTime createDate;
         QDateTime updateDate;
-        bool updateProject(QString status);
+        bool updateProject();
 };
 
 #endif // PROJECTOBJECT_H

@@ -52,7 +52,7 @@ vector<participantObject> participantModel::fetchAllObjects()
     return objects;
 }
 
-bool participantModel::addParticipant(participantObject usr, projectObject project)
+bool participantModel::addParticipant(user usr, projectObject project)
 {
     QString qry_s =  QString("INSERT INTO `project_management`.`participant` (`position_id`, `project_id`) VALUES (%1, %2);").arg(QString::number(usr.posID), QString::number(project.projectID));
     return DB::getInstance()->write(qry_s);

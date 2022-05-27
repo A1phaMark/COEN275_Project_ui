@@ -15,7 +15,7 @@ class participantModel
         vector<participantObject> fetchObjectsBy(projectObject project);
         vector<participantObject> filterObjectsBy(projectObject project);
         vector<participantObject> fetchAllObjects();
-        bool addParticipant(participantObject usr, projectObject project);
+        bool addParticipant(user usr, projectObject project);
         bool removeParticipant(participantObject usr);
         vector<participantObject> objects;
 };

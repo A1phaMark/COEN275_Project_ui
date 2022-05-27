@@ -110,6 +110,7 @@ void management_tool::setMainPage(){
 
 //set up project page
 void management_tool::setProjectPage(){
+
     projectObject project = this->projects[cur_project];
     ui->projectName->setText(project.name);
     //clear widgets
@@ -120,13 +121,17 @@ void management_tool::setProjectPage(){
     ui->bugDescription->clear();
     ui->bugTitle->setPlaceholderText("Bug title");
     ui->bugDescription->setPlaceholderText("Bug description");
-    //retrieve data from sql db
 
 
 
 
     //get and set up project status. Index 0 = in progress, index 1 = completed
-    ui->projectStatusBox->setCurrentIndex(1);
+    if(project.status == "In Progress"){
+        ui->projectStatusBox->setCurrentIndex(0);
+    }
+    else{
+        ui->projectStatusBox->setCurrentIndex(1);
+    }
 
     //get task list
     QStringList label;
@@ -139,6 +144,7 @@ void management_tool::setProjectPage(){
     QTreeWidgetItem *root1 = new QTreeWidgetItem(ui->taskList);
     root1->setText(0, "In Progress");
     ui->taskList->addTopLevelItem(root1);
+    //retrieve data from sql db
     for (auto item = this->progressTasks.begin(); item != this->progressTasks.end(); item++)
     {
         taskObject task = *item;
@@ -190,10 +196,10 @@ void management_tool::setNewProjectPage(){
     ui->dateFormatWarning->setVisible(false);
     ui->emptyDescriptionWarning->setVisible(false);
     //set up employee list
-    this->newParticipants = participantModel().fetchAllObjects();
+    this->newParticipants = userModel().fetchAllObjects();
     for (auto new_item = this->newParticipants.begin(); new_item != this->newParticipants.end(); new_item++)
     {
-        participantObject participant = *new_item;
+        user participant = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(participant.userName);
         item->setCheckState(Qt::Unchecked);
@@ -221,11 +227,11 @@ void management_tool::setParticipantPage(){
         ui->currentParticipants->addItem(item);
     }
 
-    vector<participantObject>allUsers = participantModel().fetchAllObjects();
-    this->newParticipants = vector<participantObject>();
+    vector<user>allUsers = userModel().fetchAllObjects();
+    this->newParticipants = vector<user>();
 
     //set up new participants list
-    for (participantObject participant: allUsers){
+    for (user participant: allUsers){
         bool added = false;
         for(participantObject addedParticipant: this->curParticipants){
             if(addedParticipant.posID == participant.posID){
@@ -233,15 +239,16 @@ void management_tool::setParticipantPage(){
             }
         }
 
+        qDebug()<<"All User" << participant.userName << " " << participant.posID;
+
         if(!added){
+            qDebug()<<participant.userName;
             this->newParticipants.push_back(participant);
             QListWidgetItem *item = new QListWidgetItem;
             item->setText(participant.userName);
             item->setCheckState(Qt::Unchecked);
             ui->addParticipants->addItem(item);
         }
-
-        added = false;
     }
 }
 
@@ -291,6 +298,14 @@ void management_tool::setTaskPage(){
         ui->taskStatusLabel->setVisible(false);
         ui->taskStatusBox->setVisible(false);
     }
+
+    if(task.status == "In Progress"){
+        ui->taskStatusBox->setCurrentIndex(0);
+    }
+    else{
+        ui->taskStatusBox->setCurrentIndex(1);
+    }
+
     //set comment section
     vector<commentObject> comments = commentModel().fetchObjectsBy(task);
     for (auto item = comments.begin(); item != comments.end(); item++)
@@ -438,7 +453,7 @@ void management_tool::on_confirmNewProject_clicked()
         this->projects = projectModel().fetchAllObjects();
         projectObject lastProject = this->projects.back();
         int i = 0;
-        for(participantObject newParticipant: this->newParticipants)
+        for(user newParticipant: this->newParticipants)
         {
             if (ui->employeeList->item(i)->checkState() == Qt::Checked){
                  participantModel().addParticipant(newParticipant, lastProject);
@@ -484,7 +499,7 @@ void management_tool::on_addParticipantsButton_clicked()
     //get added employees list
     //update MySQL db
     int i = 0;
-    for(participantObject participant: this->newParticipants){
+    for(user participant: this->newParticipants){
         if (ui->addParticipants->item(i)->checkState() == Qt::Checked){
              participantModel().addParticipant(participant, this->projects[cur_project]);
         }
@@ -502,6 +517,7 @@ void management_tool::on_addParticipantsButton_clicked()
 void management_tool::on_removeParticipants_clicked()
 {
     //get selected employees list
+    //update MySQL db
     int i = 0;
     for(participantObject participant: this->curParticipants){
         if (ui->currentParticipants->item(i)->checkState() == Qt::Checked){
@@ -510,7 +526,6 @@ void management_tool::on_removeParticipants_clicked()
 
         i++;
     }
-    //update MySQL db
 
 
     //update current page
@@ -585,17 +600,16 @@ void management_tool::on_newTaskButton_clicked()
 
 void management_tool::on_projectStatusBox_currentIndexChanged(int index)
 {
-    string status;
+    projectObject project = this->projects[cur_project];
     if (index == 0){
-        status = "In Progress";
+        project.status = "In Progress";
     }
     else{
-        status = "Completed";
+        project.status = "Completed";
     }
-    cout<<index<<endl;
+
     //upate db
-
-
+    project.updateProject();
 
     //refresh page
     this->repaint();
@@ -746,14 +760,16 @@ void management_tool::on_reassignButton_clicked()
 void management_tool::on_taskStatusBox_currentIndexChanged(int index)
 {
     string status;
+    taskObject task = getTask();
     if (index == 0){
-        status = "In Progress";
+        task.status = "In Progress";
     }
     else{
-        status = "Completed";
+        task.status = "Completed";
     }
-    cout<<index<<endl;
+
     //upate task status to sql db
+    task.updateTask();
 
 
     this->repaint();
