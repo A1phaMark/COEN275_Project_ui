@@ -31,6 +31,8 @@ public:
     bool checkDateFormat(std::string date);
     taskObject getTask();
     void refreshTasks();
+    void refreshTasksByUser();
+
 private slots:
 
     void on_login_2_clicked();
@@ -83,6 +85,10 @@ private slots:
     void on_reassignButton_clicked();
 
     void on_taskStatusBox_currentIndexChanged(int index);
+
+    void on_viewAllTask_clicked();
+
+    void on_viewOwnTask_clicked();
 
 private:
     Ui::management_tool *ui;

@@ -68,10 +68,10 @@ vector<taskObject> taskModel::fetchObjectsBy(user usr)
     return objects;
 }
 
-vector<taskObject> taskModel::fetchObjectsBy(user usr, QString curStatus)
+vector<taskObject> taskModel::fetchObjectsBy(user usr, projectObject project, QString curStatus)
 {
     objects = vector<taskObject>();
-    QString qry_s =  QString("SELECT * FROM project_management.task JOIN project_management.project ON project_management.task.project_id = project_management.project.id AND project_management.task.position_id = %1 AND project_management.task.status='%2' ORDER BY project_management.project.id;").arg(QString::number(usr.posID), curStatus);
+    QString qry_s =  QString("SELECT * FROM project_management.task JOIN project_management.project ON project_management.task.project_id = project_management.project.id AND project_management.task.position_id = %1 AND project_management.task.status='%2' AND project_management.project.id = %3;").arg(QString::number(usr.posID), curStatus, QString::number(project.projectID));
     QSqlQuery qry =  DB::getInstance()->read(qry_s);
     while(qry.next())
     {

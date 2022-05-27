@@ -11,6 +11,7 @@
 using namespace std;
 
 int cur_project = 0, cur_new_task = 0, cur_progress_task = 0, cur_completed_task = 0, cur_task_status = 0;
+bool viewAllTask = true;
 
 management_tool::management_tool(QWidget *parent)
     : QMainWindow(parent)
@@ -62,6 +63,12 @@ void management_tool::refreshTasks(){
     this->completedTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "Completed");
 }
 
+void management_tool::refreshTasksByUser(){
+    this->newTasks = taskModel().fetchObjectsBy(*this->usr, this->projects[cur_project], "New");
+    this->progressTasks = taskModel().fetchObjectsBy(*this->usr, this->projects[cur_project], "In Progress");
+    this->completedTasks = taskModel().fetchObjectsBy(*this->usr, this->projects[cur_project], "Completed");
+}
+
 
 // start with all set page functions ---------------------------------------------------------------------------------------------
 //set to login page
@@ -98,7 +105,7 @@ void management_tool::setMainPage(){
         QTreeWidgetItem *child = new QTreeWidgetItem();
         child->setText(0, project.name);
         if(project.status == "New"){
-            child->setIcon(0, QIcon(":/icon/new.png"));
+            child->setIcon(0, QIcon(":/icon/new.PNG"));
         }
         else if(project.status == "In Progress"){
             child->setIcon(0, QIcon(":/icon/in_progress.png"));
@@ -107,7 +114,7 @@ void management_tool::setMainPage(){
             child->setIcon(0, QIcon(":/icon/completed.png"));
         }
         else{
-            child->setIcon(0, QIcon(":/icon/closed.png"));
+            child->setIcon(0, QIcon(":/icon/closed.PNG"));
         }
         child->setText(1, project.createDate.toString("yyyy-MM-dd"));
         child->setText(2, project.updateDate.toString("yyyy-MM-dd"));
@@ -149,7 +156,13 @@ void management_tool::setProjectPage(){
     ui->taskList->setColumnCount(5);
     label<<"Task Name"<<"Status"<<"Start Date"<<"End Date"<<"Worker";
     ui->taskList->setHeaderLabels(label);
-    refreshTasks();
+    if(viewAllTask){
+        refreshTasks();
+    }
+    else{
+        refreshTasksByUser();
+    }
+
 
     //get new task
     QTreeWidgetItem *root1 = new QTreeWidgetItem(ui->taskList);
@@ -330,6 +343,11 @@ void management_tool::setTaskPage(){
         ui->taskStatusBox->setVisible(false);
     }
 
+    if(task.owner == this->usr->userName){
+        ui->taskStatusLabel->setVisible(true);
+        ui->taskStatusBox->setVisible(true);
+    }
+
     if(task.status == "New"){
         ui->taskStatusBox->setCurrentIndex(0);
     }
@@ -410,6 +428,12 @@ void management_tool::on_login_2_clicked()
             ui->newTaskButton->setVisible(false);
             ui->projectStatusBox->setVisible(false);
             ui->projectStatusLabel->setVisible(false);
+            ui->viewAllTask->setVisible(true);
+            ui->viewOwnTask->setVisible(true);
+        }
+        else{
+            ui->viewAllTask->setVisible(false);
+            ui->viewOwnTask->setVisible(false);
         }
         ui->stackedWidget->setCurrentIndex(1);
     }
@@ -431,6 +455,7 @@ void management_tool::on_viewDetail_clicked()
     if (ui->projectList_2->selectedItems().size()!=0){
         cur_project = ui->projectList_2->currentIndex().row();
         //set up project page
+        viewAllTask = true;
         setProjectPage();
         //go to project page
         ui->stackedWidget->setCurrentIndex(2);
@@ -816,5 +841,19 @@ void management_tool::on_taskStatusBox_currentIndexChanged(int index)
 
 
     this->repaint();
+}
+
+
+void management_tool::on_viewAllTask_clicked()
+{
+    viewAllTask = true;
+    setProjectPage();
+}
+
+
+void management_tool::on_viewOwnTask_clicked()
+{
+    viewAllTask = false;
+    setProjectPage();
 }
 

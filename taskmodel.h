@@ -14,7 +14,7 @@ class taskModel
         vector<taskObject> fetchAllObjects();
         vector<taskObject> fetchObjectsBy(projectObject project);
         vector<taskObject> fetchObjectsBy(user usr);
-        vector<taskObject> fetchObjectsBy(user usr, QString curStatus);
+        vector<taskObject> fetchObjectsBy(user usr, projectObject project, QString curStatus);
         vector<taskObject> fetchObjectsBy(projectObject project, QString curStatus);
         bool addTask(projectObject project, QString name, QString description, QString updateDate, user usr);
         bool removeTask(taskObject task);
