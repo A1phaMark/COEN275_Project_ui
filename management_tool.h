@@ -28,6 +28,7 @@ public:
     void setParticipantPage();
     void setTaskPage();
     void setNewTaskPage();
+    void setSignupPage();
     bool checkDateFormat(std::string date);
     taskObject getTask();
     void refreshTasks();
@@ -89,6 +90,12 @@ private slots:
     void on_viewAllTask_clicked();
 
     void on_viewOwnTask_clicked();
+
+    void on_signupButton_clicked();
+
+    void on_backLoginButton_clicked();
+
+    void on_createAccountButton_clicked();
 
 private:
     Ui::management_tool *ui;

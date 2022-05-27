@@ -79,6 +79,13 @@ void management_tool::setLoginPage(){
     ui->password_4->setEchoMode(QLineEdit::Password);
 }
 
+//set up create new account page
+void management_tool::setSignupPage(){
+    ui->idInput->clear();
+    ui->passwordInput->clear();
+    ui->passwordInput->setEchoMode(QLineEdit::Password);
+}
+
 
 //set up main page
 void management_tool::setMainPage(){
@@ -446,6 +453,7 @@ void management_tool::on_login_2_clicked()
 
 void management_tool::on_logout_clicked()
 {
+    setLoginPage();
     ui->stackedWidget->setCurrentIndex(0);
 }
 
@@ -855,5 +863,60 @@ void management_tool::on_viewOwnTask_clicked()
 {
     viewAllTask = false;
     setProjectPage();
+}
+
+
+void management_tool::on_signupButton_clicked()
+{
+    setSignupPage();
+    ui->stackedWidget->setCurrentIndex(7);
+}
+
+
+void management_tool::on_backLoginButton_clicked()
+{
+    setLoginPage();
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+
+void management_tool::on_createAccountButton_clicked()
+{
+    std::string uid = ui->idInput->text().toStdString();
+    std::string pwd = ui->passwordInput->text().toStdString();
+    std::string role;
+    if (ui->roleBox->currentIndex() == 0){
+        role = "manager";
+    }
+    else{
+        role = "employee";
+    }
+    //check if user ID empty
+    if (uid.size() == 0){
+        QMessageBox::information(this, "Warning", "User ID cannot be empty");
+    }
+    //check if password is empty
+    else if (pwd.size()== 0){
+        QMessageBox::information(this, "Warning", "Password cannot be empty");
+    }
+    //check if userid is available
+    else if (0){
+
+
+
+        QMessageBox::information(this, "Warning", "User ID is not available");
+    }
+    //able to create account
+    else{
+        //update to db
+
+
+
+
+        QMessageBox::information(this, "Successful", "New account created successfully");
+        setLoginPage();
+        ui->stackedWidget->setCurrentIndex(0);
+    }
+
 }
 
