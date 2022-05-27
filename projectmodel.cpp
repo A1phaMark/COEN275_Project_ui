@@ -30,7 +30,7 @@ vector<projectObject> projectModel::fetchAllObjects()
 
 bool projectModel::addProject(QString name, QString description, QString updateDate)
 {
-     QString qry_s =  QString("INSERT INTO `project_management`.`project` (`name`, `description`, `status`) VALUES ('%1', '%2', '%3');").arg(name, description, "In Progress");
+     QString qry_s =  QString("INSERT INTO `project_management`.`project` (`name`, `description`, `status`, `update_date`) VALUES ('%1', '%2', '%3', '%4');").arg(name, description, "In Progress", updateDate);
      return DB::getInstance()->write(qry_s);
 }
 
