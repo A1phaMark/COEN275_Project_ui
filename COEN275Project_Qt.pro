@@ -18,6 +18,7 @@ SOURCES += \
     main.cpp \
     management_tool.cpp \
     participantmodel.cpp \
+    participantobject.cpp \
     projectmodel.cpp \
     projectobject.cpp \
     taskmodel.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     db.h \
     management_tool.h \
     participantmodel.h \
+    participantobject.h \
     projectmodel.h \
     projectobject.h \
     taskmodel.h \

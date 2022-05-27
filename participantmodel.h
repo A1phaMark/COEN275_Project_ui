@@ -1,7 +1,7 @@
 #ifndef PARTICIPANTMODEL_H
 #define PARTICIPANTMODEL_H
 
-#include "user.h"
+#include "participantobject.h"
 #include "projectobject.h"
 #include <QtSql>
 #include "db.h"
@@ -12,11 +12,12 @@ class participantModel
 {
     public:
         participantModel();
-        vector<user> fetchObjectsBy(projectObject project);
-        vector<user> filterObjectsBy(projectObject project);
-        vector<user> fetchAllObjects();
-        bool addParticipant(user usr, projectObject project);
-        vector<user> objects;
+        vector<participantObject> fetchObjectsBy(projectObject project);
+        vector<participantObject> filterObjectsBy(projectObject project);
+        vector<participantObject> fetchAllObjects();
+        bool addParticipant(participantObject usr, projectObject project);
+        bool removeParticipant(participantObject usr);
+        vector<participantObject> objects;
 };
 
 #endif // PARTICIPANTMODEL_H

@@ -98,7 +98,7 @@ private:
     vector<taskObject> progressTasks;
     vector<taskObject> completedTasks;
     vector<user> users;
-    vector<user> newParticipants;
-    vector<user> curParticipants;
+    vector<participantObject> newParticipants;
+    vector<participantObject> curParticipants;
 };
 #endif // MANAGEMENT_TOOL_H

@@ -177,10 +177,10 @@ void management_tool::setNewProjectPage(){
     ui->dateFormatWarning->setVisible(false);
     ui->emptyDescriptionWarning->setVisible(false);
     //set up employee list
-    this->newParticipants = userModel().fetchAllObjects();
+    this->newParticipants = participantModel().fetchAllObjects();
     for (auto new_item = this->newParticipants.begin(); new_item != this->newParticipants.end(); new_item++)
     {
-        user participant = *new_item;
+        participantObject participant = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(participant.userName);
         item->setCheckState(Qt::Unchecked);
@@ -192,7 +192,6 @@ void management_tool::setNewProjectPage(){
 //set up change participants page
 void management_tool::setParticipantPage(){
     this->curParticipants = participantModel().fetchObjectsBy(this->projects[cur_project]);
-    std::vector<std::string> newParticipants;
     //clear widgets
     ui->addParticipants->clear();
     ui->currentParticipants->clear();
@@ -202,20 +201,20 @@ void management_tool::setParticipantPage(){
     //set up current participants list
     for (auto new_item = this->curParticipants.begin(); new_item != this->curParticipants.end(); new_item++)
     {
-        user participant = *new_item;
+        participantObject participant = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(participant.userName);
         item->setCheckState(Qt::Unchecked);
         ui->currentParticipants->addItem(item);
     }
 
-    vector<user>allUsers = userModel().fetchAllObjects();
-    this->newParticipants = vector<user>();
+    vector<participantObject>allUsers = participantModel().fetchAllObjects();
+    this->newParticipants = vector<participantObject>();
 
     //set up new participants list
-    for (user participant: allUsers){
+    for (participantObject participant: allUsers){
         bool added = false;
-        for(user addedParticipant: this->curParticipants){
+        for(participantObject addedParticipant: this->curParticipants){
             if(addedParticipant.posID == participant.posID){
                 added = true;
             }
@@ -426,7 +425,7 @@ void management_tool::on_confirmNewProject_clicked()
         this->projects = projectModel().fetchAllObjects();
         projectObject lastProject = this->projects.back();
         int i = 0;
-        for(user newParticipant: this->newParticipants)
+        for(participantObject newParticipant: this->newParticipants)
         {
             if (ui->employeeList->item(i)->checkState() == Qt::Checked){
                  participantModel().addParticipant(newParticipant, lastProject);
@@ -472,7 +471,7 @@ void management_tool::on_addParticipantsButton_clicked()
     //get added employees list
     //update MySQL db
     int i = 0;
-    for(user participant: this->newParticipants){
+    for(participantObject participant: this->newParticipants){
         if (ui->addParticipants->item(i)->checkState() == Qt::Checked){
              participantModel().addParticipant(participant, this->projects[cur_project]);
         }
@@ -490,12 +489,15 @@ void management_tool::on_addParticipantsButton_clicked()
 void management_tool::on_removeParticipants_clicked()
 {
     //get selected employees list
-    std::vector<std::string> currentP;
-    for (int i=0; i<ui->currentParticipants->count(); i++){
+    int i = 0;
+    qDebug()<<this->curParticipants.size();
+    for(participantObject participant: this->curParticipants){
+        qDebug()<<i;
         if (ui->currentParticipants->item(i)->checkState() == Qt::Checked){
-            std::string temp = ui->currentParticipants->item(i)->text().toStdString();
-            currentP.push_back(temp);
+             participantModel().removeParticipant(participant);
         }
+
+        i++;
     }
     //update MySQL db
 
@@ -510,9 +512,9 @@ void management_tool::on_deleteProject_clicked()
 {
     //check if there is a selected project
     if(ui->projectList->selectedItems().size()!=0){
-        string pname = ui->projectList->currentItem()->text().toStdString();
         //update sql db
-
+        int idx = ui->projectList->currentRow();
+        projectModel().removeProject(this->projects[idx]);
 
         setMainPage();
         this->repaint();
