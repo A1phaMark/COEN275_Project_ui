@@ -2,12 +2,15 @@
 #include "ui_management_tool.h"
 #include <iostream>
 #include <QString>
+#include <QDateTime>
 #include <QList>
 #include <unistd.h>
 #include <QListWidget>
 #include <QIcon>
 #include <QMessageBox>
 using namespace std;
+
+int cur_project = 0, cur_progress_task = 0, cur_completed_task = 0, cur_task_status = 0;
 
 management_tool::management_tool(QWidget *parent)
     : QMainWindow(parent)
@@ -53,6 +56,11 @@ bool management_tool::checkDateFormat(std::string date){
 
 }
 
+void management_tool::refreshTasks(){
+    this->progressTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "In Progress");
+    this->completedTasks = taskModel().fetchObjectsBy(this->projects[cur_project], "Completed");
+}
+
 
 // start with all set page functions ---------------------------------------------------------------------------------------------
 //set to login page
@@ -68,32 +76,34 @@ void management_tool::setMainPage(){
     //clear variable
     this->projects.clear();
     //set welcome label text
-    ui->welcomeLabel->setText("Welcome, " + QString::fromStdString(userid));
+    ui->welcomeLabel->setText("Welcome, "  + this->usr->position + ":"+ this->usr->userName);
 
     //fetch user name and project list from MySQL db
 
 
     //set up project list
     ui->projectList->clear();
-    for(int i = 0; i<10; i++){
-        this->projects.push_back("project"+std::to_string(i));
-    }
-    for(string p: this->projects){
-        QListWidgetItem *item = new QListWidgetItem;
-        item->setText(QString::fromStdString(p));
-        //check status and set status icon
-
-
-        item->setIcon(QIcon(":/icon/in_progress.png"));
-        ui->projectList->addItem(item);
+    this->projects = projectModel().fetchAllObjects();
+    for (auto item = projects.begin(); item != projects.end(); item++)
+    {
+        projectObject project = *item;
+        QListWidgetItem *newItem = new QListWidgetItem();
+        newItem->setText(project.name);
+        if(project.status == "In Progress"){
+            newItem->setIcon(QIcon(":/icon/in_progress.png"));
+        }
+        else{
+            newItem->setIcon(QIcon(":/icon/completed.png"));
+        }
+         ui->projectList->addItem(newItem);
     }
     //chech user role and decide whether to show participants button
 }
 
 //set up project page
-void management_tool::setProjectPage(std::string p){
-    ui->projectName->setText(QString::fromStdString(p));
-    this->projectName = p;
+void management_tool::setProjectPage(){
+    projectObject project = this->projects[cur_project];
+    ui->projectName->setText(project.name);
     //clear widgets
     ui->taskList->clear();
     ui->bugList->clear();
@@ -115,21 +125,21 @@ void management_tool::setProjectPage(std::string p){
     ui->taskList->setColumnCount(5);
     label<<"Task Name"<<"Status"<<"Start Date"<<"End Date"<<"Worker";
     ui->taskList->setHeaderLabels(label);
+    refreshTasks();
 
     //get in progress task
     QTreeWidgetItem *root1 = new QTreeWidgetItem(ui->taskList);
     root1->setText(0, "In Progress");
     ui->taskList->addTopLevelItem(root1);
-    for (int i=0; i<30; i++){
-        std::string temp = "Task"+std::to_string(i);
+    for (auto item = this->progressTasks.begin(); item != this->progressTasks.end(); item++)
+    {
+        taskObject task = *item;
         QTreeWidgetItem *child = new QTreeWidgetItem();
-        child->setText(0, QString::fromStdString(temp));
-        //check task status
-        child->setText(1, "In Progress");
-        //check task start and end date
-        child->setText(2, QString::fromStdString(std::to_string(i)+"/23/2022"));
-        child->setText(3, QString::fromStdString(std::to_string(i)+"/23/2023"));
-        child->setText(4, "Worker1");
+        child->setText(0, task.name);
+        child->setText(1, task.status);
+        child->setText(2, task.createDate.toString("yyyy-MM-dd"));
+        child->setText(3, task.updateDate.toString("yyyy-MM-dd"));
+        child->setText(4, task.owner);
         root1->addChild(child);
     }
 
@@ -137,24 +147,23 @@ void management_tool::setProjectPage(std::string p){
     QTreeWidgetItem *root2 = new QTreeWidgetItem(ui->taskList);
     root2->setText(0, "Completed");
     ui->taskList->addTopLevelItem(root2);
-    for (int i=0; i<30; i++){
-        std::string temp = "Task"+std::to_string(i);
+    for (auto item = this->completedTasks.begin(); item != this->completedTasks .end(); item++)
+    {
+        taskObject task = *item;
         QTreeWidgetItem *child = new QTreeWidgetItem();
-        child->setText(0, QString::fromStdString(temp));
-        //check task status
-        child->setText(1, "Completed");
-        //check task start and end date
-        child->setText(2, QString::fromStdString(std::to_string(i)+"/23/2022"));
-        child->setText(3, QString::fromStdString(std::to_string(i)+"/23/2023"));
-        child->setText(4, "Worker1");
+        child->setText(0, task.name);
+        child->setText(1, task.status);
+        child->setText(2, task.createDate.toString("yyyy-MM-dd"));
+        child->setText(3, task.updateDate.toString("yyyy-MM-dd"));
+        child->setText(4, task.owner);
         root2->addChild(child);
     }
 
     //get bug list
-    for (int i=0; i<12; i++){
-        string temp = "bug"+std::to_string(i);
-        this->bugs.push_back(temp);
-        ui->bugList->addItem(QString::fromStdString(temp));
+    this->bugs = bugModel().fetchObjectsBy(project);
+    for (auto item = this->bugs.begin(); item != this->bugs.end(); item++){
+        bugObject bug = *item;
+        ui->bugList->addItem(bug.name);
     }
     //check user's role
 }
@@ -173,10 +182,12 @@ void management_tool::setNewProjectPage(){
     ui->dateFormatWarning->setVisible(false);
     ui->emptyDescriptionWarning->setVisible(false);
     //set up employee list
-    for (int i=0; i<42; i++){
+    this->newParticipants = participantModel().fetchAllObjects();
+    for (auto new_item = this->newParticipants.begin(); new_item != this->newParticipants.end(); new_item++)
+    {
+        participantObject participant = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
-        string temp = "employee"+std::to_string(i);
-        item->setText(QString::fromStdString(temp));
+        item->setText(participant.userName);
         item->setCheckState(Qt::Unchecked);
         ui->employeeList->addItem(item);
     }
@@ -184,10 +195,8 @@ void management_tool::setNewProjectPage(){
 
 
 //set up change participants page
-void management_tool::setParticipantPage(std::string p){
-    this->projectName = p;
-    std::vector<std::string> participants;
-    std::vector<std::string> newParticipants;
+void management_tool::setParticipantPage(){
+    this->curParticipants = participantModel().fetchObjectsBy(this->projects[cur_project]);
     //clear widgets
     ui->addParticipants->clear();
     ui->currentParticipants->clear();
@@ -195,24 +204,52 @@ void management_tool::setParticipantPage(std::string p){
 
 
     //set up current participants list
-    for (string par: participants){
+    for (auto new_item = this->curParticipants.begin(); new_item != this->curParticipants.end(); new_item++)
+    {
+        participantObject participant = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
-        item->setText(QString::fromStdString(par));
+        item->setText(participant.userName);
         item->setCheckState(Qt::Unchecked);
         ui->currentParticipants->addItem(item);
     }
 
+    vector<participantObject>allUsers = participantModel().fetchAllObjects();
+    this->newParticipants = vector<participantObject>();
+
     //set up new participants list
-    for (string par: newParticipants){
-        QListWidgetItem *item = new QListWidgetItem;
-        item->setText(QString::fromStdString(par));
-        item->setCheckState(Qt::Unchecked);
-        ui->addParticipants->addItem(item);
+    for (participantObject participant: allUsers){
+        bool added = false;
+        for(participantObject addedParticipant: this->curParticipants){
+            if(addedParticipant.posID == participant.posID){
+                added = true;
+            }
+        }
+
+        if(!added){
+            this->newParticipants.push_back(participant);
+            QListWidgetItem *item = new QListWidgetItem;
+            item->setText(participant.userName);
+            item->setCheckState(Qt::Unchecked);
+            ui->addParticipants->addItem(item);
+        }
+
+        added = false;
     }
 }
 
+taskObject management_tool::getTask(){
+    taskObject task;
+    if(cur_task_status == 0){
+        task = this->progressTasks[cur_progress_task];
+    }
+    else{
+        task = this->completedTasks[cur_completed_task];
+    }
+    return task;
+}
+
 //set up task page
-void management_tool::setTaskPage(std::string tn){
+void management_tool::setTaskPage(){
     //clear widget
     ui->commentInput->clear();
     ui->commentInput->setPlaceholderText("Write a comment...");
@@ -223,33 +260,39 @@ void management_tool::setTaskPage(std::string tn){
         }
     }
     //set task title label
-    ui->taskLabel->setText(QString::fromStdString(tn));
+    refreshTasks();
+    taskObject task = getTask();
+
+    ui->taskLabel->setText(task.name);
+    ui->taskDescription->setText(task.description);
+    ui->workerLabel->setText(task.owner);
     //check if the user is the worker
 
 
     //if is worker, hide assign_to_me button, show status change box
-    if(1){
+    if(this->usr->position == "manager"){
         ui->reassignButton->setVisible(false);
         ui->taskStatusLabel->setVisible(true);
         ui->taskStatusBox->setVisible(true);
         //get task status and change status box
-
-
-
         ui->taskStatusBox->setCurrentIndex(0);
     }
     //if not worker, show assign_to_me button, hide status change box
-    if(0){
+    else{
         ui->reassignButton->setVisible(true);
         ui->taskStatusLabel->setVisible(false);
         ui->taskStatusBox->setVisible(false);
     }
     //set comment section
-    for (int i =0; i<6; i++){
-    QTextBrowser* text = new QTextBrowser();
-    text->setText("The progress looks good so far. Keep up the good work!!!");
-    text->setStyleSheet("background-color: rgb(255, 255, 255);");
-    ui->scrollAreaWidgetContents->layout()->addWidget(text);
+    vector<commentObject> comments = commentModel().fetchObjectsBy(task);
+    for (auto item = comments.begin(); item != comments.end(); item++)
+    {
+        commentObject comment = *item;
+        QTextBrowser* text = new QTextBrowser();
+        text->setText(comment.content);
+        text->setStyleSheet("background-color: rgb(255, 255, 255);");
+        ui->scrollAreaWidgetContents->layout()->addWidget(text);
+
     }
     //ui->scrollAreaWidgetContents->setLayout(layout);
 }
@@ -273,11 +316,14 @@ void management_tool::setNewTaskPage(){
 
 
     //set up employee list widget
-    for (int i=0; i<12; i++){
+    this->users = userModel().fetchObjectsBy("employee");
+    for (auto new_item = this->users.begin(); new_item != this->users.end(); new_item++)
+    {
+        user user = *new_item;
         QListWidgetItem *item = new QListWidgetItem;
-        string temp = "employee"+std::to_string(i);
-        item->setText(QString::fromStdString(temp));
+        item->setText(user.userName);
         ui->employeeList_2->addItem(item);
+
     }
 }
 
@@ -287,33 +333,33 @@ void management_tool::setNewTaskPage(){
 
 void management_tool::on_login_2_clicked()
 {
-    string uid = ui->user_4->text().toStdString();
-    string pwd = ui->password_4->text().toStdString();
-    //check credential
+    QString uid = ui->user_4->text();
+    QString pwd = ui->password_4->text();
+       //check credential
 
-
-    //if wrong credential, show warning message
-    ui->warning_4->setVisible(true);
-
-    //if right credential
-    this->userid = uid;
-    ui->warning_4->setVisible(false);
-    //check user role
-
-    //if user is employee, disable certain features by setting a few buttons invisible
-    if (0){
-        ui->createNew->setVisible(false);
-        ui->deleteProject->setVisible(false);
-        ui->viewParticipants->setVisible(false);
-        ui->deleteBug->setVisible(false);
-        ui->deleteTaskButton->setVisible(false);
-        ui->newTaskButton->setVisible(false);
-        ui->projectStatusBox->setVisible(false);
-        ui->projectStatusLabel->setVisible(false);
+    this->usr = user::getInstance();
+    if(this->usr->initUserWithAuth(uid, pwd)){
+        //if right credential
+        ui->warning_4->setVisible(false);
+        setMainPage();
+        //check user role
+        //if user is employee, disable certain features by setting a few buttons invisible
+        if (this->usr->position == "employee"){
+            ui->createNew->setVisible(false);
+            ui->deleteProject->setVisible(false);
+            ui->viewParticipants->setVisible(false);
+            ui->deleteBug->setVisible(false);
+            ui->deleteTaskButton->setVisible(false);
+            ui->newTaskButton->setVisible(false);
+            ui->projectStatusBox->setVisible(false);
+            ui->projectStatusLabel->setVisible(false);
+        }
+        ui->stackedWidget->setCurrentIndex(1);
     }
-    //set up and go to main page
-    setMainPage();
-    ui->stackedWidget->setCurrentIndex(1);
+    else{
+        //if wrong credential, show warning message
+        ui->warning_4->setVisible(true);
+    }
 }
 
 
@@ -326,10 +372,9 @@ void management_tool::on_logout_clicked()
 void management_tool::on_viewDetail_clicked()
 {
     if (ui->projectList->selectedItems().size()!=0){
-        string pname = ui->projectList->currentItem()->text().toStdString();
-        cout<<pname<<endl;
+        cur_project = ui->projectList->currentRow();
         //set up project page
-        setProjectPage(pname);
+        setProjectPage();
         //go to project page
         ui->stackedWidget->setCurrentIndex(2);
     }
@@ -357,18 +402,10 @@ void management_tool::on_confirmNewProject_clicked()
     ui->dateFormatWarning->setVisible(false);
     ui->emptyDescriptionWarning->setVisible(false);
     //get input info
-    std::string title = ui->projectTitle->text().toStdString();
-    std::string description = ui->projectDescription->toPlainText().toStdString();
-    std::string finishDate = ui->projectDate->text().toStdString();
-    //get participants list
-    std::vector<std::string> part;
-    cout<<description<<endl;
-    for (int i=0; i < ui->employeeList->count(); i++){
-        if (ui->employeeList->item(i)->checkState() == Qt::Checked){
-            part.push_back(ui->employeeList->item(i)->text().toStdString());
-            cout << ui->employeeList->item(i)->text().toStdString()<<endl;
-        }
-    }
+    QString title = ui->projectTitle->text();
+    QString description = ui->projectDescription->toPlainText();
+    QString finishDate_str = ui->projectDate->text();
+    std::string std_finishDate = ui->projectDate->text().toStdString();
 
     //check if project title is available
     if(title.size() == 0){
@@ -377,7 +414,7 @@ void management_tool::on_confirmNewProject_clicked()
 
 
     //check date format
-    else if (!checkDateFormat(finishDate)){
+    else if (!checkDateFormat(std_finishDate)){
         ui->dateFormatWarning->setVisible(true);
     }
     //check if description is empty
@@ -387,6 +424,19 @@ void management_tool::on_confirmNewProject_clicked()
 
     else{
         //update MySQL db
+        QDateTime finishDate = QDateTime::fromString(finishDate_str, "MM/dd/yyyy");
+        QString formattedDate = finishDate.toString("yyyy-MM-dd");
+        projectModel().addProject(title, description, formattedDate);
+        this->projects = projectModel().fetchAllObjects();
+        projectObject lastProject = this->projects.back();
+        int i = 0;
+        for(participantObject newParticipant: this->newParticipants)
+        {
+            if (ui->employeeList->item(i)->checkState() == Qt::Checked){
+                 participantModel().addParticipant(newParticipant, lastProject);
+            }
+            i++;
+        }
 
 
         //go back to main page
@@ -413,9 +463,9 @@ void management_tool::on_backToMain_2_clicked()
 
 void management_tool::on_viewParticipants_clicked()
 {
-    if(ui->projectList->selectedItems().size()!=0){
-        string pname = ui->projectList->currentItem()->text().toStdString();
-        setParticipantPage(pname);
+    if (ui->projectList->selectedItems().size()!=0){
+        cur_project = ui->projectList->currentRow();
+        setParticipantPage();
         ui->stackedWidget->setCurrentIndex(4);
     }
 }
@@ -424,18 +474,18 @@ void management_tool::on_viewParticipants_clicked()
 void management_tool::on_addParticipantsButton_clicked()
 {
     //get added employees list
-    std::vector<std::string> addP;
-    for (int i=0; i<ui->addParticipants->count(); i++){
-        if (ui->addParticipants->item(i)->checkState() == Qt::Checked){
-            std::string temp = ui->addParticipants->item(i)->text().toStdString();
-            addP.push_back(temp);
-        }
-    }
     //update MySQL db
+    int i = 0;
+    for(participantObject participant: this->newParticipants){
+        if (ui->addParticipants->item(i)->checkState() == Qt::Checked){
+             participantModel().addParticipant(participant, this->projects[cur_project]);
+        }
 
+        i++;
+    }
 
     //update current page
-    setParticipantPage(this->projectName);
+    setParticipantPage();
     this->repaint();
 
 }
@@ -444,18 +494,19 @@ void management_tool::on_addParticipantsButton_clicked()
 void management_tool::on_removeParticipants_clicked()
 {
     //get selected employees list
-    std::vector<std::string> currentP;
-    for (int i=0; i<ui->currentParticipants->count(); i++){
+    int i = 0;
+    for(participantObject participant: this->curParticipants){
         if (ui->currentParticipants->item(i)->checkState() == Qt::Checked){
-            std::string temp = ui->currentParticipants->item(i)->text().toStdString();
-            currentP.push_back(temp);
+             participantModel().removeParticipant(participant);
         }
+
+        i++;
     }
     //update MySQL db
 
 
     //update current page
-    setParticipantPage(this->projectName);
+    setParticipantPage();
     this->repaint();
 }
 
@@ -464,9 +515,9 @@ void management_tool::on_deleteProject_clicked()
 {
     //check if there is a selected project
     if(ui->projectList->selectedItems().size()!=0){
-        string pname = ui->projectList->currentItem()->text().toStdString();
         //update sql db
-
+        int idx = ui->projectList->currentRow();
+        projectModel().removeProject(this->projects[idx]);
 
         setMainPage();
         this->repaint();
@@ -477,9 +528,14 @@ void management_tool::on_deleteProject_clicked()
 void management_tool::on_pushButton_4_clicked()
 {
     if(ui->taskList->selectedItems().size() == 1 && ui->taskList->currentItem()->columnCount() == 5){
-        std::string taskName = ui->taskList->currentItem()->text(0).toStdString();
-        cout<<taskName<<endl;
-        setTaskPage(taskName);
+        cur_task_status = ui->taskList->currentIndex().parent().row();
+        if(cur_task_status == 0){
+            cur_progress_task = ui->taskList->currentIndex().row();
+        }
+        else{
+            cur_completed_task = ui->taskList->currentIndex().row();
+        }
+        setTaskPage();
         ui->stackedWidget->setCurrentIndex(5);
     }
 }
@@ -487,8 +543,10 @@ void management_tool::on_pushButton_4_clicked()
 
 void management_tool::on_viewBug_clicked()
 {
+    int idx = ui->bugList->currentRow();
+    bugObject bug = this->bugs[idx];
     if (ui->bugList->selectedItems().size() == 1){
-        QMessageBox::information(this, "bug1", "this is a bug. The button doesn't work and it will crush the program.");
+        QMessageBox::information(this, bug.name, bug.description);
     }
 }
 
@@ -496,14 +554,14 @@ void management_tool::on_viewBug_clicked()
 
 void management_tool::on_backToProject_clicked()
 {
-    setProjectPage(this->projectName);
+    setProjectPage();
     ui->stackedWidget->setCurrentIndex(2);
 }
 
 
 void management_tool::on_cancelNewTask_clicked()
 {
-    setProjectPage(this->projectName);
+    setProjectPage();
     ui->stackedWidget->setCurrentIndex(2);
 }
 
@@ -540,11 +598,17 @@ void management_tool::on_deleteTaskButton_clicked()
 {
     //check if there is a selected task
     if(ui->taskList->selectedItems().size() == 1 && ui->taskList->currentItem()->columnCount() == 5){
-        string tname = ui->taskList->currentItem()->text(0).toStdString();
+        cur_task_status = ui->taskList->currentIndex().parent().row();
+        if(cur_task_status == 0){
+            cur_progress_task = ui->taskList->currentIndex().row();
+        }
+        else{
+            cur_completed_task = ui->taskList->currentIndex().row();
+        }
+
         //update sql db
-
-
-        setProjectPage(this->projectName);
+        taskModel().removeTask(getTask());
+        setProjectPage();
         this->repaint();
     }
 }
@@ -554,11 +618,11 @@ void management_tool::on_deleteBug_clicked()
 {
     //check if there is a selected project
     if(ui->bugList->selectedItems().size()!=0){
-        string bname = ui->bugList->currentItem()->text().toStdString();
+        int idx = ui->bugList->currentRow();
         //update sql db
-
-
-        setProjectPage(this->projectName);
+        bugObject bug = this->bugs[idx];
+        bugModel().removeBug(bug);
+        setProjectPage();
         this->repaint();
     }
 }
@@ -572,16 +636,16 @@ void management_tool::on_confirmNewTask_clicked()
     ui->taskTitleWarning->setVisible(false);
     ui->taskParticipantWarning->setVisible(false);
     //get input info
-    std::string title = ui->newTaskTitle->text().toStdString();
-    std::string description = ui->newTaskDescription->toPlainText().toStdString();
-    std::string finishDate = ui->newTaskDate->text().toStdString();
+    QString title = ui->newTaskTitle->text();
+    QString description = ui->newTaskDescription->toPlainText();
+    QString finishDate_str = ui->newTaskDate->text();
+    std::string std_finishDate = ui->newTaskDate->text().toStdString();
     //get participant
     if(ui->employeeList_2->selectedItems().size() == 0){
         ui->taskParticipantWarning->setVisible(true);
+        return;
     }
-    else{
-        std::string participant = ui->employeeList_2->currentItem()->text().toStdString();
-    }
+
     //check if project title is available
     if(title.size() == 0){
         ui->taskTitleWarning->setVisible(true);
@@ -589,7 +653,7 @@ void management_tool::on_confirmNewTask_clicked()
 
 
     //check date format
-    else if (!checkDateFormat(finishDate)){
+    else if (!checkDateFormat(std_finishDate)){
         ui->taskDateWarning->setVisible(true);
     }
     //check if description is empty
@@ -598,12 +662,16 @@ void management_tool::on_confirmNewTask_clicked()
     }
     else{
         //update MySQL db
-
-
+        QDateTime finishDate = QDateTime::fromString(finishDate_str, "MM/dd/yyyy");
+        QString formattedDate = finishDate.toString("yyyy-MM-dd");
+        qDebug() << formattedDate;
+        int idx = ui->employeeList_2->currentRow();
+        user employee = this->users[idx];
+        taskModel().addTask(this->projects[cur_project], title, description, formattedDate, employee);
 
         //go back to project page
         QMessageBox::information(this, "Completed", "New task created");
-        setProjectPage(this->projectName);
+        setProjectPage();
         ui->stackedWidget->setCurrentIndex(2);
     }
 }
@@ -612,8 +680,8 @@ void management_tool::on_confirmNewTask_clicked()
 void management_tool::on_createBug_clicked()
 {
     //get new bug info
-    std::string title = ui->bugTitle->text().toStdString();
-    std::string description = ui->bugDescription->toPlainText().toStdString();
+    QString title = ui->bugTitle->text();
+    QString description = ui->bugDescription->toPlainText();
     //check if bug title available
     if (title.size() == 0){
         QMessageBox::information(this, "Warning", "Bug title unavailable");
@@ -625,13 +693,11 @@ void management_tool::on_createBug_clicked()
     //create new bug
     else{
         //update to sql db
-
-
-
+        bugModel().addBug(this->projects[cur_project], title, description);
 
         QMessageBox::information(this, "Completed", "New bug created");
         //refresh the page
-        setProjectPage(this->projectName);
+        setProjectPage();
         this->repaint();
     }
 }
@@ -640,20 +706,18 @@ void management_tool::on_createBug_clicked()
 //post new comment button
 void management_tool::on_pushButton_7_clicked()
 {
-    std::string comment = ui->commentInput->toPlainText().toStdString();
-    std::string taskName = ui->taskLabel->text().toStdString();
+    QString comment = ui->commentInput->toPlainText();
     //check if comment is empty
     if (comment.size() == 0){
         QMessageBox::information(this, "Warning", "Cannot post an empty comment");
     }
     else{
         //update to sql db
-
-
+        commentModel().addComment(comment, getTask());
 
         QMessageBox::information(this, "Completed", "New comment posted");
         //refresh page
-        setTaskPage(taskName);
+        setTaskPage();
         this->repaint();
     }
 }
@@ -662,11 +726,11 @@ void management_tool::on_pushButton_7_clicked()
 void management_tool::on_reassignButton_clicked()
 {
     //update to sql db
-
-
+    taskObject task = getTask();
+    task.assignTask(*this->usr);
 
     //refresh the page
-    setTaskPage(ui->taskLabel->text().toStdString());
+    setTaskPage();
     this->repaint();
 }
 
