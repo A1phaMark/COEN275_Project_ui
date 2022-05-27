@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/icon">
+        <file>closed.PNG</file>
         <file>in_progress.png</file>
+        <file>new.PNG</file>
         <file>completed.png</file>
     </qresource>
 </RCC>

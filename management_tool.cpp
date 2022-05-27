@@ -98,7 +98,7 @@ void management_tool::setMainPage(){
         QTreeWidgetItem *child = new QTreeWidgetItem();
         child->setText(0, project.name);
         if(project.status == "New"){
-            child->setIcon(0, QIcon(":/icon/in_progress.png"));
+            child->setIcon(0, QIcon(":/icon/new.png"));
         }
         else if(project.status == "In Progress"){
             child->setIcon(0, QIcon(":/icon/in_progress.png"));
@@ -107,7 +107,7 @@ void management_tool::setMainPage(){
             child->setIcon(0, QIcon(":/icon/completed.png"));
         }
         else{
-            child->setIcon(0, QIcon(":/icon/completed.png"));
+            child->setIcon(0, QIcon(":/icon/closed.png"));
         }
         child->setText(1, project.createDate.toString("yyyy-MM-dd"));
         child->setText(2, project.updateDate.toString("yyyy-MM-dd"));
@@ -129,9 +129,6 @@ void management_tool::setProjectPage(){
     ui->bugDescription->clear();
     ui->bugTitle->setPlaceholderText("Bug title");
     ui->bugDescription->setPlaceholderText("Bug description");
-
-
-
 
     //get and set up project status. Index 0 = in progress, index 1 = completed
     if(project.status == "New"){
