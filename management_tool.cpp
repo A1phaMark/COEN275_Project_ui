@@ -101,8 +101,8 @@ void management_tool::setMainPage(){
         else{
             child->setIcon(0, QIcon(":/icon/completed.png"));
         }
-        child->setText(1, project.createDate.toString());
-        child->setText(2, project.updateDate.toString());
+        child->setText(1, project.createDate.toString("yyyy-MM-dd"));
+        child->setText(2, project.updateDate.toString("yyyy-MM-dd"));
         ui->projectList_2->addTopLevelItem(child);
     }
     //chech user role and decide whether to show participants button
@@ -380,7 +380,7 @@ void management_tool::on_logout_clicked()
 void management_tool::on_viewDetail_clicked()
 {
     if (ui->projectList_2->selectedItems().size()!=0){
-        cur_project = ui->projectList_2->currentRow();
+        cur_project = ui->projectList_2->currentIndex().row();
         //set up project page
         setProjectPage();
         //go to project page
@@ -471,8 +471,8 @@ void management_tool::on_backToMain_2_clicked()
 
 void management_tool::on_viewParticipants_clicked()
 {
-    if (ui->projectList->selectedItems().size()!=0){
-        cur_project = ui->projectList->currentRow();
+    if (ui->projectList_2->selectedItems().size()!=0){
+        cur_project = ui->projectList_2->currentIndex().row();
         setParticipantPage();
         ui->stackedWidget->setCurrentIndex(4);
     }
@@ -522,9 +522,9 @@ void management_tool::on_removeParticipants_clicked()
 void management_tool::on_deleteProject_clicked()
 {
     //check if there is a selected project
-    if(ui->projectList->selectedItems().size()!=0){
+    if (ui->projectList_2->selectedItems().size()!=0){
         //update sql db
-        int idx = ui->projectList->currentRow();
+        int idx = ui->projectList_2->currentIndex().row();
         projectModel().removeProject(this->projects[idx]);
 
         setMainPage();
