@@ -66,13 +66,15 @@ void management_tool::refreshTasks(){
 //set to login page
 void management_tool::setLoginPage(){
     ui->stackedWidget->setCurrentIndex(0);
+    ui->user_4->clear();
+    ui->password_4->clear();
 }
 
 
 //set up main page
 void management_tool::setMainPage(){
     //clear widgets
-    ui->projectList->clear();
+    ui->projectList_2->clear();
     //clear variable
     this->projects.clear();
     //set welcome label text
@@ -82,20 +84,26 @@ void management_tool::setMainPage(){
 
 
     //set up project list
-    ui->projectList->clear();
     this->projects = projectModel().fetchAllObjects();
+    ui->projectList_2->setColumnCount(3);
+    QStringList label;
+    label<<"Project Name"<<"Start Date"<<"End Date";
+    ui->projectList_2->setHeaderLabels(label);
+
     for (auto item = projects.begin(); item != projects.end(); item++)
     {
         projectObject project = *item;
-        QListWidgetItem *newItem = new QListWidgetItem();
-        newItem->setText(project.name);
+        QTreeWidgetItem *child = new QTreeWidgetItem();
+        child->setText(0, project.name);
         if(project.status == "In Progress"){
-            newItem->setIcon(QIcon(":/icon/in_progress.png"));
+            child->setIcon(0, QIcon(":/icon/in_progress.png"));
         }
         else{
-            newItem->setIcon(QIcon(":/icon/completed.png"));
+            child->setIcon(0, QIcon(":/icon/completed.png"));
         }
-         ui->projectList->addItem(newItem);
+        child->setText(1, project.createDate.toString());
+        child->setText(2, project.updateDate.toString());
+        ui->projectList_2->addTopLevelItem(child);
     }
     //chech user role and decide whether to show participants button
 }
@@ -371,8 +379,8 @@ void management_tool::on_logout_clicked()
 
 void management_tool::on_viewDetail_clicked()
 {
-    if (ui->projectList->selectedItems().size()!=0){
-        cur_project = ui->projectList->currentRow();
+    if (ui->projectList_2->selectedItems().size()!=0){
+        cur_project = ui->projectList_2->currentRow();
         //set up project page
         setProjectPage();
         //go to project page
