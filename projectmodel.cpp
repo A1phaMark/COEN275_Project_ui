@@ -32,8 +32,9 @@ vector<projectObject> projectModel::fetchOwnObjects(int userid)
 {
     objects = vector<projectObject>();
     QString qry_s = "SELECT DISTINCT pro.id, pro.name, pro.status, pro.create_date, pro.update_date, pro.description"
-            "FROM project_management.project pro, project_management.participant par WHERE pro.id = par.project_id and par.id = "
+            " FROM project_management.project pro, project_management.participant par WHERE pro.id = par.project_id and par.position_id = "
             + QString::fromStdString(std::to_string(userid));
+    qDebug()<< qry_s;
     QSqlQuery qry =  DB::getInstance()->read(qry_s);
     while(qry.next())
     {

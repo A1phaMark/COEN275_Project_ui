@@ -104,7 +104,7 @@ void management_tool::setMainPage(){
         this->projects = projectModel().fetchAllObjects();
     }
     else{
-        this->projects = projectModel().fetchOwnObjects(this->usr->userID);
+        this->projects = projectModel().fetchOwnObjects(this->usr->posID);
     }
     ui->projectList_2->setColumnCount(3);
     QStringList label;
