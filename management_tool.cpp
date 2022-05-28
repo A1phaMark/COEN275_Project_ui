@@ -144,6 +144,19 @@ void management_tool::setProjectPage(){
     ui->bugTitle->setPlaceholderText("Bug title");
     ui->bugDescription->setPlaceholderText("Bug description");
 
+    if(this->usr->position == "employee"){
+        ui->bugTitle->setVisible(false);
+        ui->bugDescription->setVisible(false);
+        ui->deleteBug->setVisible(false);
+        ui->createBug->setVisible(false);
+    }
+    else{
+        ui->bugTitle->setVisible(true);
+        ui->bugDescription->setVisible(true);
+        ui->deleteBug->setVisible(true);
+        ui->createBug->setVisible(true);
+    }
+
     //get and set up project status. Index 0 = in progress, index 1 = completed
     if(project.status == "New"){
         ui->projectStatusBox->setCurrentIndex(0);
