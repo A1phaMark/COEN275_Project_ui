@@ -337,16 +337,13 @@ void management_tool::setTaskPage(){
     ui->taskLabel->setText(task.name);
     ui->taskDescription->setText(task.description);
     ui->workerLabel->setText(task.owner);
-    //check if the user is the worker
 
-
-    //if is worker, hide assign_to_me button, show status change box
-    if(this->usr->position == "manager"){
+    //check user role
+    //if the user is manager or is the owner of the task. Show status box
+    if(this->usr->position == "manager" or task.owner == this->usr->userName){
         ui->reassignButton->setVisible(false);
         ui->taskStatusLabel->setVisible(true);
         ui->taskStatusBox->setVisible(true);
-        //get task status and change status box
-        ui->taskStatusBox->setCurrentIndex(0);
     }
     //if not worker, show assign_to_me button, hide status change box
     else{
@@ -355,11 +352,7 @@ void management_tool::setTaskPage(){
         ui->taskStatusBox->setVisible(false);
     }
 
-    if(task.owner == this->usr->userName){
-        ui->taskStatusLabel->setVisible(true);
-        ui->taskStatusBox->setVisible(true);
-    }
-
+    //get task status and change status box
     if(task.status == "New"){
         ui->taskStatusBox->setCurrentIndex(0);
     }
