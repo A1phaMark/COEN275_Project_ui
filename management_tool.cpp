@@ -626,9 +626,12 @@ void management_tool::on_pushButton_4_clicked()
     if(ui->taskList->selectedItems().size() == 1 && ui->taskList->currentItem()->columnCount() == 5){
         cur_task_status = ui->taskList->currentIndex().parent().row();
         if(cur_task_status == 0){
+            cur_new_task = ui->taskList->currentIndex().row();
+        }
+        else if (cur_task_status == 1){
             cur_progress_task = ui->taskList->currentIndex().row();
         }
-        else{
+        else {
             cur_completed_task = ui->taskList->currentIndex().row();
         }
         setTaskPage();
