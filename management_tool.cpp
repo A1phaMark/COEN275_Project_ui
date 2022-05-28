@@ -884,7 +884,7 @@ void management_tool::on_createAccountButton_clicked()
 {
     std::string uid = ui->idInput->text().toStdString();
     std::string pwd = ui->passwordInput->text().toStdString();
-    std::string role;
+    QString role;
     if (ui->roleBox->currentIndex() == 0){
         role = "manager";
     }
@@ -900,22 +900,20 @@ void management_tool::on_createAccountButton_clicked()
         QMessageBox::information(this, "Warning", "Password cannot be empty");
     }
     //check if userid is available
-    else if (0){
-
-
-
-        QMessageBox::information(this, "Warning", "User ID is not available");
-    }
-    //able to create account
-    else{
+    else
+    {
         //update to db
-
-
-
-
-        QMessageBox::information(this, "Successful", "New account created successfully");
-        setLoginPage();
-        ui->stackedWidget->setCurrentIndex(0);
+        if (auth().signUp(ui->idInput->text(), ui->passwordInput->text())){
+            auth new_user = auth();
+            new_user.login(ui->idInput->text(), ui->passwordInput->text());
+            userModel().addPosition(new_user, role);
+            QMessageBox::information(this, "Successful", "New account created successfully");
+            setLoginPage();
+            ui->stackedWidget->setCurrentIndex(0);
+        }
+        else{
+            QMessageBox::information(this, "Warning", "User ID is not available");
+        }
     }
 
 }
