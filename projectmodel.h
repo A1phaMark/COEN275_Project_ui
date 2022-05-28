@@ -11,7 +11,8 @@ class projectModel
 {
     public:
         projectModel();
-        vector<projectObject> fetchAllObjects();
+        vector<projectObject> fetchAllObjects();\
+        vector<projectObject> fetchOwnObjects(int userid);
         bool addProject(QString name, QString description, QString updateDate);
         bool removeProject(projectObject project);
         vector<projectObject> objects;

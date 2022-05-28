@@ -100,7 +100,12 @@ void management_tool::setMainPage(){
 
 
     //set up project list
-    this->projects = projectModel().fetchAllObjects();
+    if (this->usr->position == "manager"){
+        this->projects = projectModel().fetchAllObjects();
+    }
+    else{
+        this->projects = projectModel().fetchOwnObjects(this->usr->userID);
+    }
     ui->projectList_2->setColumnCount(3);
     QStringList label;
     label<<"Project Name"<<"Start Date"<<"End Date";
@@ -439,6 +444,14 @@ void management_tool::on_login_2_clicked()
             ui->viewOwnTask->setVisible(true);
         }
         else{
+            ui->createNew->setVisible(true);
+            ui->deleteProject->setVisible(true);
+            ui->viewParticipants->setVisible(true);
+            ui->deleteBug->setVisible(true);
+            ui->deleteTaskButton->setVisible(true);
+            ui->newTaskButton->setVisible(true);
+            ui->projectStatusBox->setVisible(true);
+            ui->projectStatusLabel->setVisible(true);
             ui->viewAllTask->setVisible(false);
             ui->viewOwnTask->setVisible(false);
         }
