@@ -327,11 +327,12 @@ void management_tool::setTaskPage(){
     if (ui->scrollAreaWidgetContents->layout() != NULL){
         QLayoutItem *item;
         while(item = ui->scrollAreaWidgetContents->layout()->takeAt(0)){
+            delete item->widget();
             delete item;
         }
     }
     //set task title label
-    refreshTasks();
+//    refreshTasks();
     taskObject task = getTask();
 
     ui->taskLabel->setText(task.name);
@@ -370,6 +371,7 @@ void management_tool::setTaskPage(){
         commentObject comment = *item;
         QTextBrowser* text = new QTextBrowser();
         text->setText(comment.content);
+        qDebug()<<comment.content;
         text->setStyleSheet("background-color: rgb(255, 255, 255);");
         ui->scrollAreaWidgetContents->layout()->addWidget(text);
 
@@ -507,6 +509,8 @@ void management_tool::on_confirmNewProject_clicked()
     if(title.size() == 0){
         ui->projectTitleWarning->setVisible(true);
     }
+    else if(ui->employeeList->selectedItems().size()==0)
+        return;
 
 
     //check date format
@@ -536,7 +540,12 @@ void management_tool::on_confirmNewProject_clicked()
 
 
         //go back to main page
-        QMessageBox::information(this, "Completed", "New project created");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("New project created");
+        msg.setWindowTitle("Completed");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
         setMainPage();
         ui->stackedWidget->setCurrentIndex(1);
     }
@@ -642,10 +651,15 @@ void management_tool::on_pushButton_4_clicked()
 
 void management_tool::on_viewBug_clicked()
 {
-    int idx = ui->bugList->currentRow();
-    bugObject bug = this->bugs[idx];
     if (ui->bugList->selectedItems().size() == 1){
-        QMessageBox::information(this, bug.name, bug.description);
+        int idx = ui->bugList->currentRow();
+        bugObject bug = this->bugs[idx];
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText(bug.description);
+        msg.setWindowTitle(bug.name);
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
 }
 
@@ -774,7 +788,13 @@ void management_tool::on_confirmNewTask_clicked()
         taskModel().addTask(this->projects[cur_project], title, description, formattedDate, employee);
 
         //go back to project page
-        QMessageBox::information(this, "Completed", "New task created");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("New task created");
+        msg.setWindowTitle("Completed");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
+
         setProjectPage();
         ui->stackedWidget->setCurrentIndex(2);
     }
@@ -788,18 +808,32 @@ void management_tool::on_createBug_clicked()
     QString description = ui->bugDescription->toPlainText();
     //check if bug title available
     if (title.size() == 0){
-        QMessageBox::information(this, "Warning", "Bug title unavailable");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("Bug title unavailable");
+        msg.setWindowTitle("Warning");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
     //check if bug description is empty
     else if (description.size() ==0){
-        QMessageBox::information(this, "Warning", "Bug description cannot be empty");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("Bug description cannot be empty");
+        msg.setWindowTitle("Warning");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
     //create new bug
     else{
         //update to sql db
         bugModel().addBug(this->projects[cur_project], title, description);
-
-        QMessageBox::information(this, "Completed", "New bug created");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("New bug created");
+        msg.setWindowTitle("Completed");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
         //refresh the page
         setProjectPage();
         this->repaint();
@@ -813,13 +847,23 @@ void management_tool::on_pushButton_7_clicked()
     QString comment = ui->commentInput->toPlainText();
     //check if comment is empty
     if (comment.size() == 0){
-        QMessageBox::information(this, "Warning", "Cannot post an empty comment");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("Cannot post an empty comment");
+        msg.setWindowTitle("Warning");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
     else{
         //update to sql db
         commentModel().addComment(comment, getTask());
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("New comment posted");
+        msg.setWindowTitle("Completed");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
 
-        QMessageBox::information(this, "Completed", "New comment posted");
         //refresh page
         setTaskPage();
         this->repaint();
@@ -902,11 +946,21 @@ void management_tool::on_createAccountButton_clicked()
     }
     //check if user ID empty
     if (uid.size() == 0){
-        QMessageBox::information(this, "Warning", "User ID cannot be empty");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("User ID cannot be empty");
+        msg.setWindowTitle("Warning");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
     //check if password is empty
     else if (pwd.size()== 0){
-        QMessageBox::information(this, "Warning", "Password cannot be empty");
+        QMessageBox msg = QMessageBox();
+        msg.setStyleSheet("color=black");
+        msg.setText("Password cannot be empty");
+        msg.setWindowTitle("Warning");
+        msg.setIcon(QMessageBox::Information);
+        msg.exec();
     }
     //check if userid is available
     else
@@ -916,12 +970,22 @@ void management_tool::on_createAccountButton_clicked()
             auth new_user = auth();
             new_user.login(ui->idInput->text(), ui->passwordInput->text());
             userModel().addPosition(new_user, role);
-            QMessageBox::information(this, "Successful", "New account created successfully");
+            QMessageBox msg = QMessageBox();
+            msg.setStyleSheet("color=black");
+            msg.setText("New account created successfully");
+            msg.setWindowTitle("Successful");
+            msg.setIcon(QMessageBox::Information);
+            msg.exec();
             setLoginPage();
             ui->stackedWidget->setCurrentIndex(0);
         }
         else{
-            QMessageBox::information(this, "Warning", "User ID is not available");
+            QMessageBox msg = QMessageBox();
+            msg.setStyleSheet("color=black");
+            msg.setText("User ID is not available");
+            msg.setWindowTitle("Warning");
+            msg.setIcon(QMessageBox::Information);
+            msg.exec();
         }
     }
 

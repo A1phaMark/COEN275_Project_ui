@@ -7,6 +7,7 @@ vector<commentObject> commentModel::fetchObjectsBy(taskObject task)
     objects = vector<commentObject>();
     QString qry_s = QString("SELECT * FROM project_management.comment WHERE project_management.comment.task_id = %1").arg(task.taskID);
     QSqlQuery qry =  DB::getInstance()->read(qry_s);
+    qDebug()<<qry_s;
     while(qry.next())
     {
         commentObject newObject = commentObject();
